@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Pengajuan Pinjaman</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+body {
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    background: radial-gradient(circle at center, #000010, #001122);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 50px;
+    color: #00fff7;
+    perspective: 1500px;
+}
+
+.container {
+    background: rgba(0,0,0,0.85);
+    padding: 30px;
+    border-radius: 25px;
+    box-shadow: 0 0 30px #00fff7, 0 0 60px #0ff, 0 0 90px #00f;
+    max-width: 600px;
+    width: 90%;
+    border: 2px solid #0ff;
+    position: relative;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2em;
+    color: #0ff;
+    text-shadow: 0 0 10px #0ff, 0 0 20px #00f;
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin: 12px 0 5px;
+    text-shadow: 0 0 5px #00fff7;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+    margin-bottom: 18px;
+    background: #111;
+    color: #0ff;
+    box-shadow: inset 0 0 8px #00f;
+    transition: 0.3s;
+}
+
+input:focus, select:focus {
+    box-shadow: 0 0 12px #0ff, inset 0 0 8px #00f;
+}
+
+button {
+    padding: 14px 22px;
+    border-radius: 15px;
+    border: none;
+    background: linear-gradient(45deg, #00f, #0ff);
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 10px;
+    margin-top: 10px;
+    box-shadow: 0 0 15px #0ff, 0 0 25px #00f;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05) rotateX(5deg);
+    box-shadow: 0 0 25px #0ff, 0 0 50px #00f, 0 0 80px #0ff;
+}
+
+/* Hologram 3D */
+.holo {
+    position: relative;
+    margin-top: 40px;
+    background: rgba(0,255,255,0.08);
+    border: 1px solid #0ff;
+    border-radius: 20px;
+    padding: 25px;
+    width: 100%;
+    box-shadow: 0 0 50px #0ff, 0 0 120px #0ff inset;
+    text-align: center;
+    font-size: 1.2em;
+    color: #0ff;
+    backdrop-filter: blur(12px);
+    transform-style: preserve-3d;
+    animation: holoFloat 3s ease-in-out infinite alternate;
+}
+
+@keyframes holoFloat {
+    0% { transform: rotateX(5deg) rotateY(-5deg) translateY(0); }
+    50% { transform: rotateX(-5deg) rotateY(5deg) translateY(-10px); }
+    100% { transform: rotateX(5deg) rotateY(-5deg) translateY(0); }
+}
+
+.holo p {
+    margin: 10px 0;
+    text-shadow: 0 0 8px #0ff, 0 0 15px #00f;
+    transition: 0.2s ease;
+}
+
+.holo span {
+    display:inline-block;
+    animation: neonWave 1.5s ease-in-out infinite;
+}
+
+@keyframes neonWave {
+    0%,100%{text-shadow: 0 0 8px #0ff,0 0 15px #00f}
+    50%{text-shadow: 0 0 20px #0ff,0 0 30px #00f}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Pengajuan Pinjaman</h1>
+<form id="loanForm">
+    <label>Nama Nasabah</label>
+    <input type="text" id="nama" required>
+
+    <label>Alamat</label>
+    <input type="text" id="alamat" required>
+
+    <label>NIK</label>
+    <input type="text" id="nik" required>
+
+    <label>Pinjaman</label>
+    <select id="pinjaman" required>
+        <option value="">Pilih Pinjaman</option>
+        <option value="100000">Rp. 100.000</option>
+        <option value="200000">Rp. 200.000</option>
+        <option value="300000">Rp. 300.000</option>
+        <option value="400000">Rp. 400.000</option>
+        <option value="500000">Rp. 500.000</option>
+    </select>
+
+    <label>Tempo</label>
+    <select id="tempo" required>
+        <option value="">Pilih Tempo</option>
+        <option value="24">24 Hari</option>
+        <option value="30">30 Hari</option>
+    </select>
+
+    <button type="button" onclick="exportPDF()">Export PDF</button>
+    <button type="button" onclick="exportExcel()">Export Excel</button>
+</form>
+
+<div class="holo" id="holoResult">
+    <p>Pinjaman: Rp. <span id="resPinjaman">0</span></p>
+    <p>Jumlah Hutang Dibayar: Rp. <span id="resHutang">0</span></p>
+    <p>Angsuran/Hari: Rp. <span id="resAngsuran">0</span></p>
+    <p>Tempo: <span id="resTempo">0</span> Hari</p>
+    <p>Tabungan Nasabah: Rp. <span id="resTabungan">0</span></p>
+    <p>Biaya Operasional: Rp. <span id="resBiaya">0</span></p>
+    <p>Terima Bersih: Rp. <span id="resBersih">0</span></p>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// Perhitungan real-time
+function calculateLoan() {
+    const pinjaman = parseFloat(document.getElementById('pinjaman').value || 0);
+    const tempo = parseFloat(document.getElementById('tempo').value || 0);
+    if(!pinjaman || !tempo) return;
+
+    const jumlahHutang = pinjaman * 1.2; 
+    const angsuran = jumlahHutang / tempo; 
+    const biayaOperasional = pinjaman * 0.05;
+    const terimaBersih = pinjaman * 0.9;
+    const tabunganNasabah = -biayaOperasional;
+
+    document.getElementById('resPinjaman').innerHTML = formatHolo(pinjaman);
+    document.getElementById('resHutang').innerHTML = formatHolo(jumlahHutang);
+    document.getElementById('resAngsuran').innerHTML = formatHolo(angsuran);
+    document.getElementById('resTempo').innerHTML = formatHolo(tempo);
+    document.getElementById('resTabungan').innerHTML = formatHolo(tabunganNasabah);
+    document.getElementById('resBiaya').innerHTML = formatHolo(biayaOperasional);
+    document.getElementById('resBersih').innerHTML = formatHolo(terimaBersih);
+}
+
+function formatHolo(num){
+    return num.toLocaleString().split('').map(c => `<span>${c}</span>`).join('');
+}
+
+document.getElementById('pinjaman').addEventListener('change', calculateLoan);
+document.getElementById('tempo').addEventListener('change', calculateLoan);
+
+// Export PDF dengan teks hitam
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const nama = document.getElementById('nama').value;
+    const alamat = document.getElementById('alamat').value;
+    const nik = document.getElementById('nik').value;
+    const pinjaman = document.getElementById('resPinjaman').textContent;
+    const hutang = document.getElementById('resHutang').textContent;
+    const angsuran = document.getElementById('resAngsuran').textContent;
+    const tempo = document.getElementById('resTempo').textContent;
+    const tabungan = document.getElementById('resTabungan').textContent;
+    const biaya = document.getElementById('resBiaya').textContent;
+    const bersih = document.getElementById('resBersih').textContent;
+
+    doc.setFont("Courier", "bold");
+    doc.setTextColor(0, 0, 0); // teks hitam
+    doc.setFontSize(18);
+    doc.text("PENGAJUAN PINJAMAN", 15, 20);
+
+    doc.setFontSize(12);
+    doc.setFont("Courier", "normal");
+
+    let startY = 35;
+    const lineHeight = 10;
+    doc.text(`Nama: ${nama}`, 15, startY);
+    doc.text(`Alamat: ${alamat}`, 15, startY + lineHeight);
+    doc.text(`NIK: ${nik}`, 15, startY + lineHeight*2);
+
+    doc.setDrawColor(0,0,0);
+    doc.setLineWidth(0.5);
+    doc.line(15, startY + lineHeight*3 + 2, 195, startY + lineHeight*3 + 2);
+
+    const data = [
+        ["Pinjaman", `Rp. ${pinjaman}`],
+        ["Jumlah Hutang Dibayar", `Rp. ${hutang}`],
+        ["Angsuran/Hari", `Rp. ${angsuran}`],
+        ["Tempo", `${tempo} Hari`],
+        ["Tabungan", `Rp. ${tabungan}`],
+        ["Biaya Operasional", `Rp. ${biaya}`],
+        ["Terima Bersih", `Rp. ${bersih}`],
+    ];
+
+    let y = startY + lineHeight*4;
+    data.forEach(row => {
+        doc.text(`${row[0]}:`, 15, y);
+        doc.text(`${row[1]}`, 110, y);
+        y += lineHeight;
+    });
+
+    doc.save("Pengajuan_Pinjaman.pdf");
+}
+
+// Export Excel
+function exportExcel() {
+    const wb = XLSX.utils.book_new();
+    const ws_data = [
+        ["Nama", document.getElementById('nama').value],
+        ["Alamat", document.getElementById('alamat').value],
+        ["NIK", document.getElementById('nik').value],
+        ["Pinjaman", document.getElementById('resPinjaman').textContent],
+        ["Jumlah Hutang Dibayar", document.getElementById('resHutang').textContent],
+        ["Angsuran/Hari", document.getElementById('resAngsuran').textContent],
+        ["Tempo", document.getElementById('resTempo').textContent],
+        ["Tabungan", document.getElementById('resTabungan').textContent],
+        ["Biaya Operasional", document.getElementById('resBiaya').textContent],
+        ["Terima Bersih", document.getElementById('resBersih').textContent],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    XLSX.utils.book_append_sheet(wb, ws, "Pinjaman");
+    XLSX.writeFile(wb, "Pengajuan_Pinjaman.xlsx");
+}
+</script>
+</body>
+</html>
